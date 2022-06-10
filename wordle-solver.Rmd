@@ -1,35 +1,45 @@
+---
+title: "Wordle Solver"
+output: flexdashboard::flex_dashboard
+runtime: shiny
+---
 
-pacman::p_load('readxl','stringr','tidyverse')
+```{r setup, include=FALSE}
+pacman::p_load('flexdashboard','readxl','stringr','tidyverse','DT','knitr')
+```
 
 
-# Load words
+```{r global, include=FALSE}
+# load data in 'global' chunk so it can be shared by all users of the dashboard
+base.word.list <- list(
+  "Dictionary" = 
+    read_excel("words_lists.xlsx", sheet = "big.list") %>% select(-freq),
+  "Scrable" =  
+    read_excel("words_lists.xlsx",sheet = "scrable.list") %>% select(-freq),
+  "Wordle" =  
+    read_excel("words_lists.xlsx", sheet = "wordle.list")
+  )
 
 
-big.list <- read_excel("words_lists.xlsx", 
-                          sheet = "big.list")%>% 
-            select(-freq)
-scrable.list <- read_excel("words_lists.xlsx", 
-                          sheet = "scrable.list")%>% 
-                select(-freq)
-wordle.list <- read_excel("words_lists.xlsx", 
-                          sheet = "wordle.list") 
-
-frequency.table = data.frame("Letters" = letters)
-
-df <- data.frame("word" = tolower(wordle.list$word))
-df <- cbind(df,as.data.frame(str_split_fixed(df$word, "", 5)))
-
-frequency.table %>%  
-  left_join(as.data.frame(table(df$V1)),by = c("Letters"="Var1")) %>%
-  rename("Pos 1" = "Freq") %>% 
-  left_join(as.data.frame(table(df$V2)),by = c("Letters"="Var1")) %>% 
-  rename("Pos 2" = "Freq") %>%
-  left_join(as.data.frame(table(df$V3)),by = c("Letters"="Var1")) %>% 
-  rename("Pos 3" = "Freq") %>%
-  left_join(as.data.frame(table(df$V4)),by = c("Letters"="Var1")) %>% 
-  rename("Pos 4" = "Freq") %>%
-  left_join(as.data.frame(table(df$V5)),by = c("Letters"="Var1")) %>% 
-  rename("Pos 5" = "Freq")
+letter.frequency <- function(df){
+  frequency.table = data.frame("Letters" = letters)
+  
+  df <- data.frame("word" = tolower(df))
+  df <- cbind(df,as.data.frame(str_split_fixed(df$word, "", 5)))
+  test.out <- df
+  frequency.table <- frequency.table %>%  
+    left_join(as.data.frame(table(df$V1)),by = c("Letters"="Var1")) %>%
+    rename("Pos 1" = "Freq") %>% 
+    left_join(as.data.frame(table(df$V2)),by = c("Letters"="Var1")) %>% 
+    rename("Pos 2" = "Freq") %>%
+    left_join(as.data.frame(table(df$V3)),by = c("Letters"="Var1")) %>% 
+    rename("Pos 3" = "Freq") %>%
+    left_join(as.data.frame(table(df$V4)),by = c("Letters"="Var1")) %>% 
+    rename("Pos 4" = "Freq") %>%
+    left_join(as.data.frame(table(df$V5)),by = c("Letters"="Var1")) %>% 
+    rename("Pos 5" = "Freq")
+  return(frequency.table)
+}
 
 make.word.list <- function(df) {
   df$word <- tolower(df$word)
@@ -122,34 +132,68 @@ guess.eval <- function(words, guess, feedback, exact) {
               "Exact" = exact))
 }
 
-get.feedback <- function(){
-  Numbers<-c()
-  for (i in 1:5){
-    prompt_str = paste0("Enter feedback for position ",i,": ");
-    num <-readline(prompt_str);
-    Numbers[i]<-as.numeric(num)
-  }
-  return(Numbers)
-}
+
+```
+
+Column {.sidebar data-width=200}
+-----------------------------------------------------------------------
+### Word List
+
+```{r}
+selectInput("word.list.select", label = "Select base word list:",
+            choices = c("Dictionary", "Scrable", "Wordle"), selected = "Dictionary")
+```
+
+```{r}
+renderText(
+  paste0("Using the ",input$word.list.select," word list, we start with ", 
+         nrow(base.word.list[[input$word.list.select]]), " words.")
+)
+```
+
+### Guess 1
+
+```{r}
+renderText(
+  make.word.list(base.word.list[[input$word.list.select]])$`Guess S2`
+)
+```
+
+Column {data-width=350}
+-----------------------------------------------------------------------
 
 
 
-word.list <- make.word.list(df=wordle.list)
-words <- word.list$`Word List` 
-guess <- word.list$`Guess S2`
+### Top Words
+```{r}
+renderDT(
+  make.word.list(base.word.list[[input$word.list.select]])$`Word List` %>% 
+    select(word,S2) %>% 
+    arrange(desc(S2)),
+  rownames= FALSE,
+  options = list(dom = 't')
+)
+  
+  
+```
 
-exact = NULL
 
-for(g in 1:6){
-  cat(paste0("\nGuess ",g," : ",guess,"\nWords remaining: ", nrow(words),"\n" ));
-  feedback = get.feedback();
-  out <- guess.eval(words,guess,feedback,exact)
-  df <- out$"Word List"
-  exact = out$"Exact"
-  view(out$"Word Filter")
-  word.list <- make.word.list(df=df)
-  view(word.list$"Word List")
-  words <- word.list$`Word List`
-  guess <- word.list$`Guess S2`
-  if(nrow(words)<=1){cat("Final guess is ",guess);break}
-}
+
+
+Column {data-width=500}
+-----------------------------------------------------------------------
+
+
+
+### Letter Frequency
+
+```{r}
+renderDT(
+  letter.frequency(base.word.list[[input$word.list.select]]$word),
+  rownames= FALSE,
+  options = list(dom = 't')
+)
+  
+  
+```
+ 
