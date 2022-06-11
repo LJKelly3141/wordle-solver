@@ -20,6 +20,9 @@ base.word.list <- list(
     read_excel("words_lists.xlsx", sheet = "wordle.list")
   )
 
+word.list <- reactiveVal(list(
+  "Word List" = data.frame("Word" = NULL, "Score" = NULL)
+))
 
 letter.frequency <- function(df){
   frequency.table = data.frame("Letters" = letters)
@@ -139,14 +142,16 @@ Column {.sidebar data-width=400}
 -----------------------------------------------------------------------
 ### Word List
 
-```{r}
+```{r, a1}
 selectInput("word.list.select", label = "Select base word list:",
             choices = c("Dictionary", "Scrable", "Wordle"), selected = "Dictionary")
 actionButton("select", "Set Word List",class = "btn-primary")
 
+
+
 word.list.a <- eventReactive(input$select, {
   guess.list <- make.word.list(base.word.list[[input$word.list.select]])
-  
+  word.list(guess.list)
   list(
     word.list.select = input$word.list.select,
     words = base.word.list[[input$word.list.select]],
@@ -160,7 +165,6 @@ word.list.a <- eventReactive(input$select, {
 })
 
 
-
 ```
 
 ```{r}
@@ -170,7 +174,7 @@ renderText(
 )
 ```
 
-```{r}
+```{r, a2}
 state1.a <- reactiveVal(0)
 state2.a <- reactiveVal(0)
 state3.a <- reactiveVal(0)
@@ -299,10 +303,11 @@ observeEvent(input$g1p5,{
 word.list.b <- eventReactive(input$g1, {
   guess1.a(c(state1.a(),state2.a(),state3.a(),state4.a(),state5.a()))
   out <- guess.eval(word.list.a()$"Word List",word.list.a()$"Guess S2",guess1.a(),exact())
+ 
   exact(out$"Exact")
   
   guess.list <- make.word.list(out$"Word List")
-  
+  word.list(guess.list)
   list(
     word.list.select = input$word.list.select,
     words =guess.list$"Word List",
@@ -457,7 +462,7 @@ word.list.c <- eventReactive(input$g2, {
   exact(out$"Exact")
   
   guess.list <- make.word.list(out$"Word List")
-  
+  word.list(guess.list)
   list(
     word.list.select = input$word.list.select,
     words =guess.list$"Word List",
@@ -614,7 +619,7 @@ word.list.d <- eventReactive(input$g3, {
   exact(out$"Exact")
   
   guess.list <- make.word.list(out$"Word List")
-  
+  word.list(guess.list)
   list(
     word.list.select = input$word.list.select,
     words =guess.list$"Word List",
@@ -771,7 +776,7 @@ word.list.e <- eventReactive(input$g4, {
   exact(out$"Exact")
   
   guess.list <- make.word.list(out$"Word List")
-  
+  word.list(guess.list)
   list(
     word.list.select = input$word.list.select,
     words =guess.list$"Word List",
@@ -929,7 +934,7 @@ word.list.f <- eventReactive(input$g5, {
   exact(out$"Exact")
   
   guess.list <- make.word.list(out$"Word List")
-  
+  word.list(guess.list)
   list(
     word.list.select = input$word.list.select,
     words =guess.list$"Word List",
@@ -1086,7 +1091,7 @@ word.list.g <- eventReactive(input$g6, {
   exact(out$"Exact")
   
   guess.list <- make.word.list(out$"Word List")
-  
+  word.list(guess.list)
   list(
     word.list.select = input$word.list.select,
     words =guess.list$"Word List",
@@ -1117,7 +1122,7 @@ Column {data-width=225}
 ### Top Words
 ```{r}
 renderDT(
- word.list.a()$`Word List` %>% 
+ word.list()$`Word List` %>% 
     select(word,S2) %>% 
     arrange(desc(S2)) %>% 
     rename("Word List" = word, "Score" = S2),
@@ -1140,7 +1145,7 @@ Column {data-width=300}
 
 ```{r}
 renderDT(
-  letter.frequency(base.word.list[[input$word.list.select]]$word),
+  letter.frequency( word.list()$`Word List`),
   rownames= FALSE,
   options = list(dom = 't')
 )
