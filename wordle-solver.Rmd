@@ -135,31 +135,981 @@ guess.eval <- function(words, guess, feedback, exact) {
 
 ```
 
-Column {.sidebar data-width=200}
+Column {.sidebar data-width=400}
 -----------------------------------------------------------------------
 ### Word List
 
 ```{r}
 selectInput("word.list.select", label = "Select base word list:",
             choices = c("Dictionary", "Scrable", "Wordle"), selected = "Dictionary")
+actionButton("select", "Set Word List",class = "btn-primary")
+
+word.list.a <- eventReactive(input$select, {
+  guess.list <- make.word.list(base.word.list[[input$word.list.select]])
+  
+  list(
+    word.list.select = input$word.list.select,
+    words = base.word.list[[input$word.list.select]],
+    count =  nrow(base.word.list[[input$word.list.select]]),
+    "Guess S1" = guess.list$"Guess S1",
+    "Guess S2" = guess.list$"Guess S2",
+    "Position Frequency" = guess.list$"Position Frequency",
+    "Word List" = guess.list$"Word List",
+    "Next1" = ">"
+  )
+})
+
+
+
 ```
 
 ```{r}
 renderText(
-  paste0("Using the ",input$word.list.select," word list, we start with ", 
-         nrow(base.word.list[[input$word.list.select]]), " words.")
+  paste0("Using the ",word.list.a()$word.list.select," word list, we start with ", 
+        word.list.a()$count, " words.")
 )
 ```
 
-### Guess 1
+```{r}
+state1.a <- reactiveVal(0)
+state2.a <- reactiveVal(0)
+state3.a <- reactiveVal(0)
+state4.a <- reactiveVal(0)
+state5.a <- reactiveVal(0)
+
+style1 <- reactiveVal("color: #fff; background-color: #808080; border-color: #2e6da4")
+style2 <- reactiveVal("color: #fff; background-color: #808080; border-color: #2e6da4")
+style3 <- reactiveVal("color: #fff; background-color: #808080; border-color: #2e6da4")
+style4 <- reactiveVal("color: #fff; background-color: #808080; border-color: #2e6da4")
+style5 <- reactiveVal("color: #fff; background-color: #808080; border-color: #2e6da4")
+
+guess1.a <- reactiveVal(c(0,0,0,0,0))
+exact <- reactiveVal(NULL)
+
+fluidRow(
+  column(2,
+renderUI({
+  actionButton("g1p1", 
+               substr(word.list.a()$`Guess S2`,1,1),
+               style=style1())
+})
+),
+column(2,
+renderUI({
+  actionButton("g1p2", 
+               substr(word.list.a()$`Guess S2`,2,2),
+               style=style2())
+})
+),
+column(2,
+renderUI({
+  actionButton("g1p3", 
+               substr(word.list.a()$`Guess S2`,3,3),
+               style=style3())
+})
+),
+column(2,
+renderUI({
+  actionButton("g1p4", 
+               substr(word.list.a()$`Guess S2`,4,4),
+               style=style4())
+})
+),
+column(2,
+renderUI({
+  actionButton("g1p5", 
+               substr(word.list.a()$`Guess S2`,5,5),
+               style=style5())
+})
+),
+column(2,
+renderUI({
+  actionButton("g1", 
+              word.list.a()$Next1,
+               class = "btn-primary")
+}))
+)
+
+observeEvent(input$g1p1,{
+  state1.a(case_when(state1.a() == 1 ~ 0,
+                        state1.a() == 0 ~ -1,
+                        state1.a() == -1 ~ 1,
+                        TRUE ~ 0))
+  style1(case_when(state1.a() == 1 ~ 
+                     "color: #fff; background-color: #019a01; border-color: #2e6da4",
+                  state1.a() == 0 ~ 
+                     "color: #fff; background-color: #808080; border-color: #2e6da4",
+                  state1.a() == -1 ~ 
+                    "color: #fff; background-color: #ffc425; border-color: #2e6da4"))
+  
+})
+
+observeEvent(input$g1p2,{
+  state2.a(case_when(state2.a() == 1 ~ 0,
+                        state2.a() == 0 ~ -1,
+                        state2.a() == -1 ~ 1,
+                        TRUE ~ 0))
+  style2(case_when(state2.a() == 1 ~ 
+                     "color: #fff; background-color: #019a01; border-color: #2e6da4",
+                  state2.a() == 0 ~ 
+                     "color: #fff; background-color: #808080; border-color: #2e6da4",
+                  state2.a() == -1 ~ 
+                    "color: #fff; background-color: #ffc425; border-color: #2e6da4"))
+})
+
+observeEvent(input$g1p3,{
+  state3.a(case_when(state3.a() == 1 ~ 0,
+                        state3.a() == 0 ~ -1,
+                        state3.a() == -1 ~ 1,
+                        TRUE ~ 0))
+    style3(case_when(state3.a() == 1 ~ 
+                     "color: #fff; background-color: #019a01; border-color: #2e6da4",
+                  state3.a() == 0 ~ 
+                     "color: #fff; background-color: #808080; border-color: #2e6da4",
+                  state3.a() == -1 ~ 
+                    "color: #fff; background-color: #ffc425; border-color: #2e6da4"))
+})
+
+observeEvent(input$g1p4,{
+  state4.a(case_when(state4.a() == 1 ~ 0,
+                        state4.a() == 0 ~ -1,
+                        state4.a() == -1 ~ 1,
+                        TRUE ~ 0))
+   style4(case_when(state4.a() == 1 ~ 
+                     "color: #fff; background-color: #019a01; border-color: #2e6da4",
+                  state4.a() == 0 ~ 
+                     "color: #fff; background-color: #808080; border-color: #2e6da4",
+                  state4.a() == -1 ~ 
+                    "color: #fff; background-color: #ffc425; border-color: #2e6da4")) 
+})
+
+observeEvent(input$g1p5,{
+  state5.a(case_when(state5.a() == 1 ~ 0,
+                        state5.a() == 0 ~ -1,
+                        state5.a() == -1 ~ 1,
+                        TRUE ~ 0))
+  style5(case_when(state5.a() == 1 ~ 
+                     "color: #fff; background-color: #019a01; border-color: #2e6da4",
+                  state5.a() == 0 ~ 
+                     "color: #fff; background-color: #808080; border-color: #2e6da4",
+                  state5.a() == -1 ~ 
+                    "color: #fff; background-color: #ffc425; border-color: #2e6da4"))
+})
+
+word.list.b <- eventReactive(input$g1, {
+  guess1.a(c(state1.a(),state2.a(),state3.a(),state4.a(),state5.a()))
+  out <- guess.eval(word.list.a()$"Word List",word.list.a()$"Guess S2",guess1.a(),exact())
+  exact(out$"Exact")
+  
+  guess.list <- make.word.list(out$"Word List")
+  
+  list(
+    word.list.select = input$word.list.select,
+    words =guess.list$"Word List",
+    count =  nrow(guess.list$"Word List"),
+    "Guess S1" = guess.list$"Guess S1",
+    "Guess S2" = guess.list$"Guess S2",
+    "Position Frequency" = guess.list$"Position Frequency",
+    "Word List" = guess.list$"Word List",
+    "Next1" = ">"
+  )
+})
+
+```
 
 ```{r}
 renderText(
-  make.word.list(base.word.list[[input$word.list.select]])$`Guess S2`
+  paste0("The feedback provided reduced the word list to ", 
+        word.list.b()$count, " words.")
 )
 ```
 
-Column {data-width=350}
+```{r,eval=TRUE}
+state1.b <- reactiveVal(0)
+state2.b <- reactiveVal(0)
+state3.b <- reactiveVal(0)
+state4.b <- reactiveVal(0)
+state5.b <- reactiveVal(0)
+
+style1.b <- reactiveVal("color: #fff; background-color: #808080; border-color: #2e6da4")
+style2.b <- reactiveVal("color: #fff; background-color: #808080; border-color: #2e6da4")
+style3.b <- reactiveVal("color: #fff; background-color: #808080; border-color: #2e6da4")
+style4.b <- reactiveVal("color: #fff; background-color: #808080; border-color: #2e6da4")
+style5.b <- reactiveVal("color: #fff; background-color: #808080; border-color: #2e6da4")
+
+guess1.b <- reactiveVal(c(0,0,0,0,0))
+#exact <- reactiveVal(NULL)
+
+fluidRow(
+  column(2,
+renderUI({
+  actionButton("g2p1", 
+               substr(word.list.b()$`Guess S2`,1,1),
+               style=style1.b())
+})
+),
+column(2,
+renderUI({
+  actionButton("g2p2", 
+               substr(word.list.b()$`Guess S2`,2,2),
+               style=style2.b())
+})
+),
+column(2,
+renderUI({
+  actionButton("g2p3", 
+               substr(word.list.b()$`Guess S2`,3,3),
+               style=style3.b())
+})
+),
+column(2,
+renderUI({
+  actionButton("g2p4", 
+               substr(word.list.b()$`Guess S2`,4,4),
+               style=style4.b())
+})
+),
+column(2,
+renderUI({
+  actionButton("g2p5", 
+               substr(word.list.b()$`Guess S2`,5,5),
+               style=style5.b())
+})
+),
+column(2,
+renderUI({
+  actionButton("g2", 
+              word.list.b()$Next1,
+               class = "btn-primary")
+}))
+)
+
+observeEvent(input$g2p1,{
+  state1.b(case_when(state1.b() == 1 ~ 0,
+                        state1.b() == 0 ~ -1,
+                        state1.b() == -1 ~ 1,
+                        TRUE ~ 0))
+  style1.b(case_when(state1.b() == 1 ~ 
+                     "color: #fff; background-color: #019a01; border-color: #2e6da4",
+                  state1.b() == 0 ~ 
+                     "color: #fff; background-color: #808080; border-color: #2e6da4",
+                  state1.b() == -1 ~ 
+                    "color: #fff; background-color: #ffc425; border-color: #2e6da4"))
+  
+})
+
+observeEvent(input$g2p2,{
+  state2.b(case_when(state2.b() == 1 ~ 0,
+                        state2.b() == 0 ~ -1,
+                        state2.b() == -1 ~ 1,
+                        TRUE ~ 0))
+  style2.b(case_when(state2.b() == 1 ~ 
+                     "color: #fff; background-color: #019a01; border-color: #2e6da4",
+                  state2.b() == 0 ~ 
+                     "color: #fff; background-color: #808080; border-color: #2e6da4",
+                  state2.b() == -1 ~ 
+                    "color: #fff; background-color: #ffc425; border-color: #2e6da4"))
+})
+
+observeEvent(input$g2p3,{
+  state3.b(case_when(state3.b() == 1 ~ 0,
+                        state3.b() == 0 ~ -1,
+                        state3.b() == -1 ~ 1,
+                        TRUE ~ 0))
+    style3.b(case_when(state3.b() == 1 ~ 
+                     "color: #fff; background-color: #019a01; border-color: #2e6da4",
+                  state3.b() == 0 ~ 
+                     "color: #fff; background-color: #808080; border-color: #2e6da4",
+                  state3.b() == -1 ~ 
+                    "color: #fff; background-color: #ffc425; border-color: #2e6da4"))
+})
+
+observeEvent(input$g2p4,{
+  state4.b(case_when(state4.b() == 1 ~ 0,
+                        state4.b() == 0 ~ -1,
+                        state4.b() == -1 ~ 1,
+                        TRUE ~ 0))
+   style4.b(case_when(state4.b() == 1 ~ 
+                     "color: #fff; background-color: #019a01; border-color: #2e6da4",
+                  state4.b() == 0 ~ 
+                     "color: #fff; background-color: #808080; border-color: #2e6da4",
+                  state4.b() == -1 ~ 
+                    "color: #fff; background-color: #ffc425; border-color: #2e6da4")) 
+})
+
+observeEvent(input$g2p5,{
+  state5.b(case_when(state5.b() == 1 ~ 0,
+                        state5.b() == 0 ~ -1,
+                        state5.b() == -1 ~ 1,
+                        TRUE ~ 0))
+  style5.b(case_when(state5.b() == 1 ~ 
+                     "color: #fff; background-color: #019a01; border-color: #2e6da4",
+                  state5.b() == 0 ~ 
+                     "color: #fff; background-color: #808080; border-color: #2e6da4",
+                  state5.b() == -1 ~ 
+                    "color: #fff; background-color: #ffc425; border-color: #2e6da4"))
+})
+
+
+word.list.c <- eventReactive(input$g2, {
+  guess1.b(c(state1.b(),state2.b(),state3.b(),state4.b(),state5.b()))
+  out <- guess.eval(word.list.b()$"Word List",word.list.b()$"Guess S2",guess1.b(),exact())
+  exact(out$"Exact")
+  
+  guess.list <- make.word.list(out$"Word List")
+  
+  list(
+    word.list.select = input$word.list.select,
+    words =guess.list$"Word List",
+    count =  nrow(guess.list$"Word List"),
+    "Guess S1" = guess.list$"Guess S1",
+    "Guess S2" = guess.list$"Guess S2",
+    "Position Frequency" = guess.list$"Position Frequency",
+    "Word List" = guess.list$"Word List",
+    "Next1" = ">"
+  )
+})
+
+```
+
+```{r}
+renderText(
+  paste0("The feedback provided reduced the word list to ", 
+        word.list.c()$count, " words.")
+)
+```
+
+
+```{r,eval=TRUE}
+state1.c <- reactiveVal(0)
+state2.c <- reactiveVal(0)
+state3.c <- reactiveVal(0)
+state4.c <- reactiveVal(0)
+state5.c <- reactiveVal(0)
+
+style1.c <- reactiveVal("color: #fff; background-color: #808080; border-color: #2e6da4")
+style2.c <- reactiveVal("color: #fff; background-color: #808080; border-color: #2e6da4")
+style3.c <- reactiveVal("color: #fff; background-color: #808080; border-color: #2e6da4")
+style4.c <- reactiveVal("color: #fff; background-color: #808080; border-color: #2e6da4")
+style5.c <- reactiveVal("color: #fff; background-color: #808080; border-color: #2e6da4")
+
+guess1.c <- reactiveVal(c(0,0,0,0,0))
+#exact <- reactiveVal(NULL)
+
+fluidRow(
+  column(2,
+renderUI({
+  actionButton("g3p1", 
+               substr(word.list.c()$`Guess S2`,1,1),
+               style=style1.c())
+})
+),
+column(2,
+renderUI({
+  actionButton("g3p2", 
+               substr(word.list.c()$`Guess S2`,2,2),
+               style=style2.c())
+})
+),
+column(2,
+renderUI({
+  actionButton("g3p3", 
+               substr(word.list.c()$`Guess S2`,3,3),
+               style=style3.c())
+})
+),
+column(2,
+renderUI({
+  actionButton("g3p4", 
+               substr(word.list.c()$`Guess S2`,4,4),
+               style=style4.c())
+})
+),
+column(2,
+renderUI({
+  actionButton("g3p5", 
+               substr(word.list.c()$`Guess S2`,5,5),
+               style=style5.c())
+})
+),
+column(2,
+renderUI({
+  actionButton("g3", 
+              word.list.c()$Next1,
+               class = "btn-primary")
+}))
+)
+
+observeEvent(input$g3p1,{
+  state1.c(case_when(state1.c() == 1 ~ 0,
+                        state1.c() == 0 ~ -1,
+                        state1.c() == -1 ~ 1,
+                        TRUE ~ 0))
+  style1.c(case_when(state1.c() == 1 ~ 
+                     "color: #fff; background-color: #019a01; border-color: #2e6da4",
+                  state1.c() == 0 ~ 
+                     "color: #fff; background-color: #808080; border-color: #2e6da4",
+                  state1.c() == -1 ~ 
+                    "color: #fff; background-color: #ffc425; border-color: #2e6da4"))
+  
+})
+
+observeEvent(input$g3p2,{
+  state2.c(case_when(state2.c() == 1 ~ 0,
+                        state2.c() == 0 ~ -1,
+                        state2.c() == -1 ~ 1,
+                        TRUE ~ 0))
+  style2.c(case_when(state2.c() == 1 ~ 
+                     "color: #fff; background-color: #019a01; border-color: #2e6da4",
+                  state2.c() == 0 ~ 
+                     "color: #fff; background-color: #808080; border-color: #2e6da4",
+                  state2.c() == -1 ~ 
+                    "color: #fff; background-color: #ffc425; border-color: #2e6da4"))
+})
+
+observeEvent(input$g3p3,{
+  state3.c(case_when(state3.c() == 1 ~ 0,
+                        state3.c() == 0 ~ -1,
+                        state3.c() == -1 ~ 1,
+                        TRUE ~ 0))
+    style3.c(case_when(state3.c() == 1 ~ 
+                     "color: #fff; background-color: #019a01; border-color: #2e6da4",
+                  state3.c() == 0 ~ 
+                     "color: #fff; background-color: #808080; border-color: #2e6da4",
+                  state3.c() == -1 ~ 
+                    "color: #fff; background-color: #ffc425; border-color: #2e6da4"))
+})
+
+observeEvent(input$g3p4,{
+  state4.c(case_when(state4.c() == 1 ~ 0,
+                        state4.c() == 0 ~ -1,
+                        state4.c() == -1 ~ 1,
+                        TRUE ~ 0))
+   style4.c(case_when(state4.c() == 1 ~ 
+                     "color: #fff; background-color: #019a01; border-color: #2e6da4",
+                  state4.c() == 0 ~ 
+                     "color: #fff; background-color: #808080; border-color: #2e6da4",
+                  state4.c() == -1 ~ 
+                    "color: #fff; background-color: #ffc425; border-color: #2e6da4")) 
+})
+
+observeEvent(input$g3p5,{
+  state5.c(case_when(state5.c() == 1 ~ 0,
+                        state5.c() == 0 ~ -1,
+                        state5.c() == -1 ~ 1,
+                        TRUE ~ 0))
+  style5.c(case_when(state5.c() == 1 ~ 
+                     "color: #fff; background-color: #019a01; border-color: #2e6da4",
+                  state5.c() == 0 ~ 
+                     "color: #fff; background-color: #808080; border-color: #2e6da4",
+                  state5.c() == -1 ~ 
+                    "color: #fff; background-color: #ffc425; border-color: #2e6da4"))
+})
+
+
+
+word.list.d <- eventReactive(input$g3, {
+  guess1.c(c(state1.c(),state2.c(),state3.c(),state4.c(),state5.c()))
+  out <- guess.eval(word.list.c()$"Word List",word.list.c()$"Guess S2",guess1.c(),exact())
+  exact(out$"Exact")
+  
+  guess.list <- make.word.list(out$"Word List")
+  
+  list(
+    word.list.select = input$word.list.select,
+    words =guess.list$"Word List",
+    count =  nrow(guess.list$"Word List"),
+    "Guess S1" = guess.list$"Guess S1",
+    "Guess S2" = guess.list$"Guess S2",
+    "Position Frequency" = guess.list$"Position Frequency",
+    "Word List" = guess.list$"Word List",
+    "Next1" = ">"
+  )
+})
+
+```
+
+```{r}
+renderText(
+  paste0("The feedback provided reduced the word list to ", 
+        word.list.d()$count, " words.")
+)
+```
+
+
+```{r,eval=TRUE}
+state1.d <- reactiveVal(0)
+state2.d <- reactiveVal(0)
+state3.d <- reactiveVal(0)
+state4.d <- reactiveVal(0)
+state5.d <- reactiveVal(0)
+
+style1.d <- reactiveVal("color: #fff; background-color: #808080; border-color: #2e6da4")
+style2.d <- reactiveVal("color: #fff; background-color: #808080; border-color: #2e6da4")
+style3.d <- reactiveVal("color: #fff; background-color: #808080; border-color: #2e6da4")
+style4.d <- reactiveVal("color: #fff; background-color: #808080; border-color: #2e6da4")
+style5.d <- reactiveVal("color: #fff; background-color: #808080; border-color: #2e6da4")
+
+guess1.d <- reactiveVal(c(0,0,0,0,0))
+#exact <- reactiveVal(NULL)
+
+fluidRow(
+  column(2,
+renderUI({
+  actionButton("g4p1", 
+               substr(word.list.d()$`Guess S2`,1,1),
+               style=style1.d())
+})
+),
+column(2,
+renderUI({
+  actionButton("g4p2", 
+               substr(word.list.d()$`Guess S2`,2,2),
+               style=style2.d())
+})
+),
+column(2,
+renderUI({
+  actionButton("g4p3", 
+               substr(word.list.d()$`Guess S2`,3,3),
+               style=style3.d())
+})
+),
+column(2,
+renderUI({
+  actionButton("g4p4", 
+               substr(word.list.d()$`Guess S2`,4,4),
+               style=style4.d())
+})
+),
+column(2,
+renderUI({
+  actionButton("g4p5", 
+               substr(word.list.d()$`Guess S2`,5,5),
+               style=style5.d())
+})
+),
+column(2,
+renderUI({
+  actionButton("g4", 
+              word.list.d()$Next1,
+               class = "btn-primary")
+}))
+)
+
+observeEvent(input$g4p1,{
+  state1.d(case_when(state1.d() == 1 ~ 0,
+                        state1.d() == 0 ~ -1,
+                        state1.d() == -1 ~ 1,
+                        TRUE ~ 0))
+  style1.d(case_when(state1.d() == 1 ~ 
+                     "color: #fff; background-color: #019a01; border-color: #2e6da4",
+                  state1.d() == 0 ~ 
+                     "color: #fff; background-color: #808080; border-color: #2e6da4",
+                  state1.d() == -1 ~ 
+                    "color: #fff; background-color: #ffc425; border-color: #2e6da4"))
+  
+})
+
+observeEvent(input$g4p2,{
+  state2.d(case_when(state2.d() == 1 ~ 0,
+                        state2.d() == 0 ~ -1,
+                        state2.d() == -1 ~ 1,
+                        TRUE ~ 0))
+  style2.d(case_when(state2.d() == 1 ~ 
+                     "color: #fff; background-color: #019a01; border-color: #2e6da4",
+                  state2.d() == 0 ~ 
+                     "color: #fff; background-color: #808080; border-color: #2e6da4",
+                  state2.d() == -1 ~ 
+                    "color: #fff; background-color: #ffc425; border-color: #2e6da4"))
+})
+
+observeEvent(input$g4p3,{
+  state3.d(case_when(state3.d() == 1 ~ 0,
+                        state3.d() == 0 ~ -1,
+                        state3.d() == -1 ~ 1,
+                        TRUE ~ 0))
+    style3.d(case_when(state3.d() == 1 ~ 
+                     "color: #fff; background-color: #019a01; border-color: #2e6da4",
+                  state3.d() == 0 ~ 
+                     "color: #fff; background-color: #808080; border-color: #2e6da4",
+                  state3.d() == -1 ~ 
+                    "color: #fff; background-color: #ffc425; border-color: #2e6da4"))
+})
+
+observeEvent(input$g4p4,{
+  state4.d(case_when(state4.d() == 1 ~ 0,
+                        state4.d() == 0 ~ -1,
+                        state4.d() == -1 ~ 1,
+                        TRUE ~ 0))
+   style4.d(case_when(state4.d() == 1 ~ 
+                     "color: #fff; background-color: #019a01; border-color: #2e6da4",
+                  state4.d() == 0 ~ 
+                     "color: #fff; background-color: #808080; border-color: #2e6da4",
+                  state4.d() == -1 ~ 
+                    "color: #fff; background-color: #ffc425; border-color: #2e6da4")) 
+})
+
+observeEvent(input$g4p5,{
+  state5.d(case_when(state5.d() == 1 ~ 0,
+                        state5.d() == 0 ~ -1,
+                        state5.d() == -1 ~ 1,
+                        TRUE ~ 0))
+  style5.d(case_when(state5.d() == 1 ~ 
+                     "color: #fff; background-color: #019a01; border-color: #2e6da4",
+                  state5.d() == 0 ~ 
+                     "color: #fff; background-color: #808080; border-color: #2e6da4",
+                  state5.d() == -1 ~ 
+                    "color: #fff; background-color: #ffc425; border-color: #2e6da4"))
+})
+
+
+
+word.list.e <- eventReactive(input$g4, {
+  guess1.d(c(state1.d(),state2.d(),state3.d(),state4.d(),state5.d()))
+  out <- guess.eval(word.list.d()$"Word List",word.list.d()$"Guess S2",guess1.d(),exact())
+  exact(out$"Exact")
+  
+  guess.list <- make.word.list(out$"Word List")
+  
+  list(
+    word.list.select = input$word.list.select,
+    words =guess.list$"Word List",
+    count =  nrow(guess.list$"Word List"),
+    "Guess S1" = guess.list$"Guess S1",
+    "Guess S2" = guess.list$"Guess S2",
+    "Position Frequency" = guess.list$"Position Frequency",
+    "Word List" = guess.list$"Word List",
+    "Next1" = ">"
+  )
+})
+
+```
+
+```{r}
+renderText(
+  paste0("The feedback provided reduced the word list to ", 
+        word.list.e()$count, " words.")
+)
+```
+
+
+
+```{r,eval=TRUE}
+state1.e <- reactiveVal(0)
+state2.e <- reactiveVal(0)
+state3.e <- reactiveVal(0)
+state4.e <- reactiveVal(0)
+state5.e <- reactiveVal(0)
+
+style1.e <- reactiveVal("color: #fff; background-color: #808080; border-color: #2e6da4")
+style2.e <- reactiveVal("color: #fff; background-color: #808080; border-color: #2e6da4")
+style3.e <- reactiveVal("color: #fff; background-color: #808080; border-color: #2e6da4")
+style4.e <- reactiveVal("color: #fff; background-color: #808080; border-color: #2e6da4")
+style5.e <- reactiveVal("color: #fff; background-color: #808080; border-color: #2e6da4")
+
+guess1.e <- reactiveVal(c(0,0,0,0,0))
+#exact <- reactiveVal(NULL)
+
+fluidRow(
+  column(2,
+renderUI({
+  actionButton("g5p1", 
+               substr(word.list.e()$`Guess S2`,1,1),
+               style=style1.e())
+})
+),
+column(2,
+renderUI({
+  actionButton("g5p2", 
+               substr(word.list.e()$`Guess S2`,2,2),
+               style=style2.e())
+})
+),
+column(2,
+renderUI({
+  actionButton("g5p3", 
+               substr(word.list.e()$`Guess S2`,3,3),
+               style=style3.e())
+})
+),
+column(2,
+renderUI({
+  actionButton("g5p4", 
+               substr(word.list.e()$`Guess S2`,4,4),
+               style=style4.e())
+})
+),
+column(2,
+renderUI({
+  actionButton("g5p5", 
+               substr(word.list.e()$`Guess S2`,5,5),
+               style=style5.e())
+})
+),
+column(2,
+renderUI({
+  actionButton("g5", 
+              word.list.e()$Next1,
+               class = "btn-primary")
+}))
+)
+
+observeEvent(input$g5p1,{
+  state1.e(case_when(state1.e() == 1 ~ 0,
+                        state1.e() == 0 ~ -1,
+                        state1.e() == -1 ~ 1,
+                        TRUE ~ 0))
+  style1.e(case_when(state1.e() == 1 ~ 
+                     "color: #fff; background-color: #019a01; border-color: #2e6da4",
+                  state1.e() == 0 ~ 
+                     "color: #fff; background-color: #808080; border-color: #2e6da4",
+                  state1.e() == -1 ~ 
+                    "color: #fff; background-color: #ffc425; border-color: #2e6da4"))
+  
+})
+
+observeEvent(input$g5p2,{
+  state2.e(case_when(state2.e() == 1 ~ 0,
+                        state2.e() == 0 ~ -1,
+                        state2.e() == -1 ~ 1,
+                        TRUE ~ 0))
+  style2.e(case_when(state2.e() == 1 ~ 
+                     "color: #fff; background-color: #019a01; border-color: #2e6da4",
+                  state2.e() == 0 ~ 
+                     "color: #fff; background-color: #808080; border-color: #2e6da4",
+                  state2.e() == -1 ~ 
+                    "color: #fff; background-color: #ffc425; border-color: #2e6da4"))
+})
+
+observeEvent(input$g5p3,{
+  state3.e(case_when(state3.e() == 1 ~ 0,
+                        state3.e() == 0 ~ -1,
+                        state3.e() == -1 ~ 1,
+                        TRUE ~ 0))
+    style3.e(case_when(state3.e() == 1 ~ 
+                     "color: #fff; background-color: #019a01; border-color: #2e6da4",
+                  state3.e() == 0 ~ 
+                     "color: #fff; background-color: #808080; border-color: #2e6da4",
+                  state3.e() == -1 ~ 
+                    "color: #fff; background-color: #ffc425; border-color: #2e6da4"))
+})
+
+observeEvent(input$g5p4,{
+  state4.e(case_when(state4.e() == 1 ~ 0,
+                        state4.e() == 0 ~ -1,
+                        state4.e() == -1 ~ 1,
+                        TRUE ~ 0))
+   style4.e(case_when(state4.e() == 1 ~ 
+                     "color: #fff; background-color: #019a01; border-color: #2e6da4",
+                  state4.e() == 0 ~ 
+                     "color: #fff; background-color: #808080; border-color: #2e6da4",
+                  state4.e() == -1 ~ 
+                    "color: #fff; background-color: #ffc425; border-color: #2e6da4")) 
+})
+
+observeEvent(input$g5p5,{
+  state5.e(case_when(state5.e() == 1 ~ 0,
+                        state5.e() == 0 ~ -1,
+                        state5.e() == -1 ~ 1,
+                        TRUE ~ 0))
+  style5.e(case_when(state5.e() == 1 ~ 
+                     "color: #fff; background-color: #019a01; border-color: #2e6da4",
+                  state5.e() == 0 ~ 
+                     "color: #fff; background-color: #808080; border-color: #2e6da4",
+                  state5.e() == -1 ~ 
+                    "color: #fff; background-color: #ffc425; border-color: #2e6da4"))
+})
+
+
+
+word.list.f <- eventReactive(input$g5, {
+  guess1.e(c(state1.e(),state2.e(),state3.e(),state4.e(),state5.e()))
+  out <- guess.eval(word.list.e()$"Word List",word.list.e()$"Guess S2",guess1.e(),exact())
+  exact(out$"Exact")
+  
+  guess.list <- make.word.list(out$"Word List")
+  
+  list(
+    word.list.select = input$word.list.select,
+    words =guess.list$"Word List",
+    count =  nrow(guess.list$"Word List"),
+    "Guess S1" = guess.list$"Guess S1",
+    "Guess S2" = guess.list$"Guess S2",
+    "Position Frequency" = guess.list$"Position Frequency",
+    "Word List" = guess.list$"Word List",
+    "Next1" = ">"
+  )
+})
+
+```
+
+```{r}
+renderText(
+  paste0("The feedback provided reduced the word list to ", 
+        word.list.f()$count, " words.")
+)
+```
+
+
+```{r,eval=TRUE}
+state1.f <- reactiveVal(0)
+state2.f <- reactiveVal(0)
+state3.f <- reactiveVal(0)
+state4.f <- reactiveVal(0)
+state5.f <- reactiveVal(0)
+
+style1.f <- reactiveVal("color: #fff; background-color: #808080; border-color: #2e6da4")
+style2.f <- reactiveVal("color: #fff; background-color: #808080; border-color: #2e6da4")
+style3.f <- reactiveVal("color: #fff; background-color: #808080; border-color: #2e6da4")
+style4.f <- reactiveVal("color: #fff; background-color: #808080; border-color: #2e6da4")
+style5.f <- reactiveVal("color: #fff; background-color: #808080; border-color: #2e6da4")
+
+guess1.f <- reactiveVal(c(0,0,0,0,0))
+#exact <- reactiveVal(NULL)
+
+fluidRow(
+  column(2,
+renderUI({
+  actionButton("g6p1", 
+               substr(word.list.f()$`Guess S2`,1,1),
+               style=style1.f())
+})
+),
+column(2,
+renderUI({
+  actionButton("g6p2", 
+               substr(word.list.f()$`Guess S2`,2,2),
+               style=style2.f())
+})
+),
+column(2,
+renderUI({
+  actionButton("g6p3", 
+               substr(word.list.f()$`Guess S2`,3,3),
+               style=style3.f())
+})
+),
+column(2,
+renderUI({
+  actionButton("g6p4", 
+               substr(word.list.f()$`Guess S2`,4,4),
+               style=style4.f())
+})
+),
+column(2,
+renderUI({
+  actionButton("g6p5", 
+               substr(word.list.f()$`Guess S2`,5,5),
+               style=style5.f())
+})
+),
+column(2,
+renderUI({
+  actionButton("g6", 
+              word.list.f()$Next1,
+               class = "btn-primary")
+}))
+)
+
+observeEvent(input$g6p1,{
+  state1.f(case_when(state1.f() == 1 ~ 0,
+                        state1.f() == 0 ~ -1,
+                        state1.f() == -1 ~ 1,
+                        TRUE ~ 0))
+  style1.f(case_when(state1.f() == 1 ~ 
+                     "color: #fff; background-color: #019a01; border-color: #2e6da4",
+                  state1.f() == 0 ~ 
+                     "color: #fff; background-color: #808080; border-color: #2e6da4",
+                  state1.f() == -1 ~ 
+                    "color: #fff; background-color: #ffc425; border-color: #2e6da4"))
+  
+})
+
+observeEvent(input$g6p2,{
+  state2.f(case_when(state2.f() == 1 ~ 0,
+                        state2.f() == 0 ~ -1,
+                        state2.f() == -1 ~ 1,
+                        TRUE ~ 0))
+  style2.f(case_when(state2.f() == 1 ~ 
+                     "color: #fff; background-color: #019a01; border-color: #2e6da4",
+                  state2.f() == 0 ~ 
+                     "color: #fff; background-color: #808080; border-color: #2e6da4",
+                  state2.f() == -1 ~ 
+                    "color: #fff; background-color: #ffc425; border-color: #2e6da4"))
+})
+
+observeEvent(input$g6p3,{
+  state3.f(case_when(state3.f() == 1 ~ 0,
+                        state3.f() == 0 ~ -1,
+                        state3.f() == -1 ~ 1,
+                        TRUE ~ 0))
+    style3.f(case_when(state3.f() == 1 ~ 
+                     "color: #fff; background-color: #019a01; border-color: #2e6da4",
+                  state3.f() == 0 ~ 
+                     "color: #fff; background-color: #808080; border-color: #2e6da4",
+                  state3.f() == -1 ~ 
+                    "color: #fff; background-color: #ffc425; border-color: #2e6da4"))
+})
+
+observeEvent(input$g6p4,{
+  state4.f(case_when(state4.f() == 1 ~ 0,
+                        state4.f() == 0 ~ -1,
+                        state4.f() == -1 ~ 1,
+                        TRUE ~ 0))
+   style4.f(case_when(state4.f() == 1 ~ 
+                     "color: #fff; background-color: #019a01; border-color: #2e6da4",
+                  state4.f() == 0 ~ 
+                     "color: #fff; background-color: #808080; border-color: #2e6da4",
+                  state4.f() == -1 ~ 
+                    "color: #fff; background-color: #ffc425; border-color: #2e6da4")) 
+})
+
+observeEvent(input$g6p5,{
+  state5.f(case_when(state5.f() == 1 ~ 0,
+                        state5.f() == 0 ~ -1,
+                        state5.f() == -1 ~ 1,
+                        TRUE ~ 0))
+  style5.f(case_when(state5.f() == 1 ~ 
+                     "color: #fff; background-color: #019a01; border-color: #2e6da4",
+                  state5.f() == 0 ~ 
+                     "color: #fff; background-color: #808080; border-color: #2e6da4",
+                  state5.f() == -1 ~ 
+                    "color: #fff; background-color: #ffc425; border-color: #2e6da4"))
+})
+
+
+
+word.list.g <- eventReactive(input$g6, {
+  guess1.f(c(state1.f(),state2.f(),state3.f(),state4.f(),state5.f()))
+  out <- guess.fval(word.list.f()$"Word List",word.list.f()$"Guess S2",guess1.f(),exact())
+  exact(out$"Exact")
+  
+  guess.list <- make.word.list(out$"Word List")
+  
+  list(
+    word.list.select = input$word.list.select,
+    words =guess.list$"Word List",
+    count =  nrow(guess.list$"Word List"),
+    "Guess S1" = guess.list$"Guess S1",
+    "Guess S2" = guess.list$"Guess S2",
+    "Position Frequency" = guess.list$"Position Frequency",
+    "Word List" = guess.list$"Word List",
+    "Next1" = ">"
+  )
+})
+
+```
+
+```{r}
+renderText(
+  paste0("The feedback provided reduced the word list to ", 
+        word.list.g()$count, " words.")
+)
+```
+
+
+Column {data-width=225}
 -----------------------------------------------------------------------
 
 
@@ -167,9 +1117,10 @@ Column {data-width=350}
 ### Top Words
 ```{r}
 renderDT(
-  make.word.list(base.word.list[[input$word.list.select]])$`Word List` %>% 
+ word.list.a()$`Word List` %>% 
     select(word,S2) %>% 
-    arrange(desc(S2)),
+    arrange(desc(S2)) %>% 
+    rename("Word List" = word, "Score" = S2),
   rownames= FALSE,
   options = list(dom = 't')
 )
@@ -180,7 +1131,7 @@ renderDT(
 
 
 
-Column {data-width=500}
+Column {data-width=300}
 -----------------------------------------------------------------------
 
 
