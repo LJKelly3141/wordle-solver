@@ -1,0 +1,13 @@
+name: wordle-solver
+title:
+username:
+account: logan-kelly
+server: shinyapps.io
+hostUrl: https://api.shinyapps.io/v1
+appId: 6476133
+bundleId: 6000962
+url: https://logan-kelly.shinyapps.io/wordle-solver/
+when: 1655069251.80811
+lastSyncTime: 1655069251.80813
+asMultiple: FALSE
+asStatic: FALSE
